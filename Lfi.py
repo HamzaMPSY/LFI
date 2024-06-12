@@ -69,52 +69,53 @@ class Lfi(object):
         columns.append("split_id")
         # TODO: get this from the monitoring table
         create = True
-        for i, file_part in enumerate(
-            sorted(os.listdir(dir_full_path), key=lambda x: int(x.split(".")[-1]))
-        ):
-            self.connection.insert_into_monitoring_table(
-                schema=self.schema,
-                params={
-                    "table_name": table_name,
-                    "chunk_number": i,
-                    "chunk_start_date": datetime.now(),
-                    "chunk_end_date": None,
-                },
-            )
-            df_iter = pd.read_csv(
-                os.path.join(dir_full_path, file_part),
-                sep=self.sep,
-                chunksize=self.chunk_size,
-                iterator=True,
-                dtype=str,
-            )
-            while True:
-                try:
-                    df = next(df_iter)
-                    df["split_id"] = str(i)
-                    df.columns = columns
-                    df.set_index(columns[0])
-                    if create:
-                        df.head(n=0).to_sql(
-                            schema=self.schema,
-                            name=table_name,
-                            con=self.connection.db,
-                            if_exists="replace",
-                        )
-                        create = False
-                    df.to_sql(
-                        schema=self.schema,
-                        name=table_name,
-                        con=self.connection.db,
-                        if_exists="append",
-                    )
-                except StopIteration:
-                    break
-            self.connection.update_monitoring_table(
-                schema=self.schema,
-                params={
-                    "table_name": table_name,
-                    "chunk_number": i,
-                    "chunk_end_date": datetime.now(),
-                },
-            )
+        self.connection.get_the_last_split_injected(schema=self.schema)
+        # for i, file_part in enumerate(
+        #     sorted(os.listdir(dir_full_path), key=lambda x: int(x.split(".")[-1]))
+        # ):
+        #     self.connection.insert_into_monitoring_table(
+        #         schema=self.schema,
+        #         params={
+        #             "table_name": table_name,
+        #             "chunk_number": i,
+        #             "chunk_start_date": datetime.now(),
+        #             "chunk_end_date": None,
+        #         },
+        #     )
+        #     df_iter = pd.read_csv(
+        #         os.path.join(dir_full_path, file_part),
+        #         sep=self.sep,
+        #         chunksize=self.chunk_size,
+        #         iterator=True,
+        #         dtype=str,
+        #     )
+        #     while True:
+        #         try:
+        #             df = next(df_iter)
+        #             df["split_id"] = str(i)
+        #             df.columns = columns
+        #             df.set_index(columns[0])
+        #             if create:
+        #                 df.head(n=0).to_sql(
+        #                     schema=self.schema,
+        #                     name=table_name,
+        #                     con=self.connection.db,
+        #                     if_exists="replace",
+        #                 )
+        #                 create = False
+        #             df.to_sql(
+        #                 schema=self.schema,
+        #                 name=table_name,
+        #                 con=self.connection.db,
+        #                 if_exists="append",
+        #             )
+        #         except StopIteration:
+        #             break
+        #     self.connection.update_monitoring_table(
+        #         schema=self.schema,
+        #         params={
+        #             "table_name": table_name,
+        #             "chunk_number": i,
+        #             "chunk_end_date": datetime.now(),
+        #         },
+        #     )

@@ -127,10 +127,32 @@ class DBConnection:
         )
         self.execute(sql=update_sql, params=params)
 
-    # def get_the_last_split_injected(self, params, schema="public", table="monitoring"):
+    def get_the_last_split_injected(self, params, schema="public", table="monitoring"):
 
-    #      update_sql = """SELECT M"""
-    #     self.execute(sql=update_sql, params=params)
+        update_sql = (
+            """
+            select
+                *
+            from """
+            + schema
+            + "."
+            + table
+            + """ where
+                chunk_number = (
+                    select
+                        max(chunk_number)
+                    from"""
+            + schema
+            + "."
+            + table
+            + """ where
+                        table_name = :table_name)
+                and table_name = :table_name ;
+        """
+        )
+        rs = self.execute(sql=update_sql, params=params)
+        logger.info(rs)
+        logger.info(type(rs))
 
     def close(self):
         """TODO: add docstring to this method"""

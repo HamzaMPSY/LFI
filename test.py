@@ -11,5 +11,6 @@ if __name__ == "__main__":
         split_size=10000,
         chunk_size=1024,
         schema="mpsy",
+        sep=';'
     )
     lfi.start()

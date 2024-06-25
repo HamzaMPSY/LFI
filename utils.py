@@ -34,7 +34,8 @@ def get_folder_name(path):
 def split_large_file(file_path, split_size, dir_name, dir_full_path):
     """TODO: write the docstring for this function."""
     with contextlib.ExitStack() as stack:
-        fd_in = stack.enter_context(open(file_path, "r", encoding="ISO-8859-1"))
+        fd_in = stack.enter_context(
+            open(file_path, "r", encoding="ISO-8859-1"))
         for i, line in enumerate(fd_in):
             if i == 0:
                 cols = line
